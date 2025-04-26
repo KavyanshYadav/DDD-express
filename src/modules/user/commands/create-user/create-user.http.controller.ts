@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { CreateUserService } from "./create-user.service";
 import { Address } from "../../domain/value-objects/address.value-object";
+import { injectable,inject } from "tsyringe";
 
 interface CreateUserRequestBody {
     email: string;
@@ -9,9 +10,10 @@ interface CreateUserRequestBody {
     postalCode: string;
     country: string;
   }
-
+@injectable()
 export class CreateUserHttpController {
-    constructor(private readonly createUserservice:CreateUserService){}
+    constructor(
+        @inject(CreateUserService)private readonly createUserservice:CreateUserService){}
 
     async handle(req:Request,res:Response):Promise<void> {
         try {

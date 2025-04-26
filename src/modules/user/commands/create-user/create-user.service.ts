@@ -1,8 +1,11 @@
 import { DomainEventDispatcher } from "../../../../libs/ddd/base-classes/domain-event-dispatcher";
+import { InMemoryDomainEventDispatcher } from "../../../../libs/ddd/base-classes/in-memory-event-dispatcher";
+import { Logger } from "../../../../libs/utils/Logger/logger.interface";
+import { InMemoryUserRepository } from "../../database/user.inmemory.repository";
 import { UserRepository } from "../../database/user.repository";
 import { UserEntity } from "../../domain/user.entity";
 import { Address } from "../../domain/value-objects/address.value-object";
-
+import { inject, injectable } from "tsyringe";
 interface CreateUserCommand {
   email: string;
   address: {
@@ -11,8 +14,13 @@ interface CreateUserCommand {
     country: string;
   };
 }
+@injectable()
 export class CreateUserService {
-    constructor(private readonly userRepositor:UserRepository, private readonly eventDispatcher : DomainEventDispatcher){}
+    constructor(
+        @inject("Logger") private logger: Logger,
+        @inject(InMemoryUserRepository)private readonly userRepositor:UserRepository, 
+        @inject(InMemoryDomainEventDispatcher)private readonly eventDispatcher : DomainEventDispatcher,
+    ){}
 
     async execute(command:CreateUserCommand) : Promise<UserEntity>{
         const user = UserEntity.create({
@@ -23,7 +31,7 @@ export class CreateUserService {
                 country:command.address.country,
             })
         })
-        console.log(user)
+        this.logger.error("Name")
         await this.userRepositor.save(user)
         
         const events = user.pullEvents();

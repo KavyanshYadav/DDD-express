@@ -6,6 +6,11 @@ import { CreateUserService } from "./commands/create-user/create-user.service";
 import { InMemoryUserRepository } from "./database/user.inmemory.repository";
 import { UserCreatedDomainEvent } from "./domain/events/user-created.domain-event";
 import { UserRoutes } from "./user.routes";
+import { container, injectable } from "tsyringe";
+import { Logger } from "pino";
+import { Console } from "console";
+import { ConsoleLogger } from "../../libs/utils/Logger/console-logger";
+import { WinstonLogger } from "../../libs/utils/Logger/winston-logger";
 
 class Createwall implements DomainEventHandler<UserCreatedDomainEvent>{
     async handle(event:UserCreatedDomainEvent):Promise<void>{
@@ -14,6 +19,7 @@ class Createwall implements DomainEventHandler<UserCreatedDomainEvent>{
         console.log("User created event dispatcher",event);
     }
 }
+@injectable()
 export class UserModule{
     public readonly router:Router; 
     private readonly userEventDispatcher : InMemoryDomainEventDispatcher;
@@ -26,9 +32,13 @@ export class UserModule{
         this.userRepository = new InMemoryUserRepository();
         this.userEventDispatcher.register(UserCreatedDomainEvent, new Createwall() )
 
+        container.register(InMemoryUserRepository, { useClass: InMemoryUserRepository });
+        container.register(InMemoryDomainEventDispatcher, { useClass: InMemoryDomainEventDispatcher });
+        container.register(CreateUserService, { useClass: CreateUserService });
+        container.register(CreateUserHttpController, { useClass: CreateUserHttpController });
+
         //create-user
-        const createUserservice = new CreateUserService(this.userRepository,this.userEventDispatcher);
-        const createUserHttpController = new CreateUserHttpController(createUserservice);
+      const createUserHttpController = container.resolve(CreateUserHttpController);
 
         this.router.post(UserRoutes.createUser , (req:Request,res:Response)=> createUserHttpController.handle(req,res));
     }
