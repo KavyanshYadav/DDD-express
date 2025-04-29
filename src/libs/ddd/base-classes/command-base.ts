@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { Guard } from "../../guard";
 
 type CommandMetaData = {
@@ -14,7 +15,10 @@ export abstract class Command {
 
     constructor(props:CommandProps<unknown>){
         if(Guard.isEmpty(props)){
-            
+            throw Error("Argument Error")        
+        }else{
+            this.id = props.id || randomUUID();
+            this.metadata = props.metadata || {};
         }
     }
 }

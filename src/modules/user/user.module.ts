@@ -11,6 +11,8 @@ import { Logger } from "pino";
 import { Console } from "console";
 import { ConsoleLogger } from "../../libs/utils/Logger/console-logger";
 import { WinstonLogger } from "../../libs/utils/Logger/winston-logger";
+import { MCommandBus } from "../..";
+import { CreateUserCommand } from "./commands/create-user/create-user.command";
 
 class Createwall implements DomainEventHandler<UserCreatedDomainEvent>{
     async handle(event:UserCreatedDomainEvent):Promise<void>{
@@ -32,11 +34,13 @@ export class UserModule{
         this.userRepository = new InMemoryUserRepository();
         this.userEventDispatcher.register(UserCreatedDomainEvent, new Createwall() )
 
-        container.register(InMemoryUserRepository, { useClass: InMemoryUserRepository });
-        container.register(InMemoryDomainEventDispatcher, { useClass: InMemoryDomainEventDispatcher });
+        
+        container.registerInstance(InMemoryUserRepository, this.userRepository);
+        container.registerInstance(InMemoryDomainEventDispatcher, this.userEventDispatcher);
         container.register(CreateUserService, { useClass: CreateUserService });
         container.register(CreateUserHttpController, { useClass: CreateUserHttpController });
-
+        
+        MCommandBus.register(CreateUserCommand.name, container.resolve(CreateUserService))
         //create-user
       const createUserHttpController = container.resolve(CreateUserHttpController);
 

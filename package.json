@@ -4,7 +4,12 @@
   "main": "./src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "npx nodemon ."
+    "start:dev": "npx nodemon .",
+    "start:node" : "node ./dist/index.js",
+    "build:ts" : "npx tsc",
+    "profie:doctor" : "clinic doctor  -- node dist/index.js",
+    "profile:bulletproof" :"clinic bubbleprof --autocannon [ -a localhost:$PORT/user ] -- node dist/index.js --port 2000",
+    "profile:flame": "clinic flame -- node dist/index.js"
   },
   "author": "",
   "license": "ISC",

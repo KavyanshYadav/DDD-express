@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { CreateUserService } from "./create-user.service";
 import { Address } from "../../domain/value-objects/address.value-object";
 import { injectable,inject } from "tsyringe";
+import { CreateUserCommand } from "./create-user.command";
+import { MCommandBus } from "../../../..";
+import { UserEntity } from "../../domain/user.entity";
 
 interface CreateUserRequestBody {
     email: string;
@@ -17,14 +20,14 @@ export class CreateUserHttpController {
 
     async handle(req:Request,res:Response):Promise<void> {
         try {
-            const { email, password, street, postalCode, country } = req.body;
-            
-             const user = await this.createUserservice.execute({
-                    email,
-                    address : new Address({
-                        street,postalCode,country
-                    })
-                });
+            const { email, password, street, postalCode, country }:CreateUserRequestBody = req.body;
+            const createUserCommand = new CreateUserCommand({
+                email,
+                street,
+                postalCode,
+                country, 
+            })
+             const user = await MCommandBus.execute<CreateUserCommand,UserEntity>(createUserCommand);
              res.status(201).json({
                 id: user.id,
                 email: user.getProps().email,
